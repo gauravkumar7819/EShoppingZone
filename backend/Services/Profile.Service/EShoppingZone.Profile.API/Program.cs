@@ -58,7 +58,9 @@ builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 // JWT Authentication
-var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "your-super-secret-key-minimum-32-characters-long!";
+var jwtSecret = builder.Configuration["JWT__Secret"] ?? "eshoppingzone-super-secret-jwt-key-256-bits-long";
+var jwtIssuer = builder.Configuration["JWT__Issuer"] ?? "EShoppingZone";
+var jwtAudience = builder.Configuration["JWT__Audience"] ?? "EShoppingZoneUsers";
 var key = Encoding.ASCII.GetBytes(jwtSecret);
 
 builder.Services.AddAuthentication(options =>
@@ -75,9 +77,9 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(key),
         ValidateIssuer = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidIssuer = jwtIssuer,
         ValidateAudience = true,
-        ValidAudience = builder.Configuration["Jwt:Audience"],
+        ValidAudience = jwtAudience,
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero
     };
@@ -108,7 +110,6 @@ app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapControllers();
 
 // Ensure database is created and migrations are applied
 using (var scope = app.Services.CreateScope())
@@ -116,5 +117,7 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<ProfileDbContext>();
     dbContext.Database.Migrate();
 }
+
+app.MapControllers();
 
 app.Run();

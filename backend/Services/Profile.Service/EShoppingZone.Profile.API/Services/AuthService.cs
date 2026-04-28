@@ -60,16 +60,16 @@ namespace EShoppingZone.Profile.API.Services
             };
         }
         
-        public async Task<LoginResponseDto> GitHubLoginAsync(string gitHubId, string email, string name)
+        public async Task<LoginResponseDto> GoogleLoginAsync(string googleId, string email, string name)
         {
-            var user = await _repository.GetByGitHubIdAsync(gitHubId);
+            var user = await _repository.GetByGoogleIdAsync(googleId);
             
             if (user == null)
             {
                 var existingUser = await _repository.GetByEmailAsync(email);
                 if (existingUser != null)
                 {
-                    existingUser.GitHubId = gitHubId;
+                    existingUser.GoogleId = googleId;
                     user = await _repository.UpdateAsync(existingUser);
                 }
                 else
@@ -79,7 +79,7 @@ namespace EShoppingZone.Profile.API.Services
                         FullName = name,
                         Email = email,
                         Role = "Customer",
-                        GitHubId = gitHubId,
+                        GoogleId = googleId,
                         IsActive = true,
                         IsEmailVerified = true
                     };

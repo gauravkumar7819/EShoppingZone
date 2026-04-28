@@ -105,9 +105,27 @@ namespace EShoppingZone.Profile.API.Controllers
             return Ok(addresses);
         }
         
+        [HttpGet("address/{addressId}")]
+        public async Task<IActionResult> GetAddressById(int addressId)
+        {
+            var userId = GetUserId();
+            var addresses = await _profileService.GetUserAddressesAsync(userId);
+            var address = addresses.FirstOrDefault(a => a.Id == addressId);
+            
+            if (address == null)
+                return NotFound(new { error = "Address not found" });
+                
+            return Ok(address);
+        }
+        
         [HttpPut("address/{addressId}")]
         public async Task<IActionResult> UpdateAddress(int addressId, [FromBody] CreateAddressDto addressDto)
         {
+            var userId = GetUserId();
+            var addresses = await _profileService.GetUserAddressesAsync(userId);
+            if (!addresses.Any(a => a.Id == addressId))
+                return StatusCode(403, new { error = "You are not authorized to update this address." });
+
             var result = await _profileService.UpdateAddressAsync(addressId, addressDto);
             if (!result)
                 return NotFound(new { error = "Address not found" });
@@ -118,6 +136,11 @@ namespace EShoppingZone.Profile.API.Controllers
         [HttpDelete("address/{addressId}")]
         public async Task<IActionResult> DeleteAddress(int addressId)
         {
+            var userId = GetUserId();
+            var addresses = await _profileService.GetUserAddressesAsync(userId);
+            if (!addresses.Any(a => a.Id == addressId))
+                return StatusCode(403, new { error = "You are not authorized to delete this address." });
+
             var result = await _profileService.DeleteAddressAsync(addressId);
             if (!result)
                 return NotFound(new { error = "Address not found" });

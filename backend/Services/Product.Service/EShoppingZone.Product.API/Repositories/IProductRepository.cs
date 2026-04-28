@@ -20,6 +20,7 @@ namespace EShoppingZone.Product.API.Repositories
         Task<bool> ExistsAsync(int id);
         Task<int> GetTotalCountAsync();
         Task<(IEnumerable<ProductModel> Products, int TotalCount)> GetPaginatedAsync(int pageNumber, int pageSize, string? category = null, string? searchTerm = null);
+        Task<(IEnumerable<ProductModel> Products, int TotalCount)> GetPaginatedAdminAsync(int pageNumber, int pageSize, string? searchTerm = null);
         Task<bool> AddReviewAsync(int productId, int userId, double rating, string review);
         Task UpdateStockAsync(int productId, int quantity);
     }
