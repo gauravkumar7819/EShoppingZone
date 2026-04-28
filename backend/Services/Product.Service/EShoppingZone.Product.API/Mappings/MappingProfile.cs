@@ -20,7 +20,7 @@ namespace EShoppingZone.Product.API.Mappings
                 .ForMember(dest => dest.TotalReviews, opt => opt.MapFrom(src => src.TotalReviews));
                 
             CreateMap<CreateProductDto, ProductModel>()
-                .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.Images ?? new List<string>()))
+                .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.ImageUrl ?? string.Empty))
                 .ForMember(dest => dest.Specifications, opt => opt.MapFrom(src => src.Specifications ?? new Dictionary<string, string>()));
                 
             CreateMap<UpdateProductDto, ProductModel>()

@@ -12,6 +12,8 @@ namespace EShoppingZone.Profile.API.DTOs
         public string Gender { get; set; } = string.Empty;
         public string ImageUrl { get; set; } = string.Empty;
         public bool IsActive { get; set; }
+        public bool IsEmailVerified { get; set; }
+        public DateTime CreatedAt { get; set; }
         public List<AddressDto> Addresses { get; set; } = new();
     }
     

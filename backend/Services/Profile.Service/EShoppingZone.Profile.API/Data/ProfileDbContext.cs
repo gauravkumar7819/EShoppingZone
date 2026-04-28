@@ -27,7 +27,7 @@ namespace EShoppingZone.Profile.API.Data
                 .IsUnique();
 
             modelBuilder.Entity<UserProfile>()
-                .HasIndex(u => u.GitHubId)
+                .HasIndex(u => u.GoogleId)
                 .IsUnique();
 
             modelBuilder.Entity<UserProfile>()

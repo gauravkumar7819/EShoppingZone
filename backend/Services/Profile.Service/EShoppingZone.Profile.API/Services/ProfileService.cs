@@ -58,6 +58,11 @@ namespace EShoppingZone.Profile.API.Services
             return await CreateProfileAsync(registerDto, "Merchant");
         }
         
+        public async Task<UserProfile> AddDeliveryAgentAsync(RegisterDto registerDto)
+        {
+            return await CreateProfileAsync(registerDto, "DeliveryAgent");
+        }
+        
         public async Task<UserProfile> UpdateProfileAsync(int userId, UpdateProfileDto updateDto)
         {
             var user = await _repository.GetByIdAsync(userId);
@@ -179,6 +184,39 @@ namespace EShoppingZone.Profile.API.Services
         {
             await _repository.SetDefaultAddressAsync(userId, addressId);
             return true;
+        }
+        
+        // Admin methods
+        public async Task<IEnumerable<UserProfile>> GetAllUsersAsync(int pageNumber, int pageSize)
+        {
+            var allUsers = await _repository.GetAllAsync();
+            return allUsers.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+        }
+        
+        public async Task<UserProfile?> SuspendUserAsync(int userId)
+        {
+            var user = await _repository.GetByIdAsync(userId);
+            if (user == null) return null;
+            
+            user.IsActive = false;
+            await _repository.UpdateAsync(user);
+            return user;
+        }
+        
+        public async Task<UserProfile?> ReactivateUserAsync(int userId)
+        {
+            var user = await _repository.GetByIdAsync(userId);
+            if (user == null) return null;
+            
+            user.IsActive = true;
+            await _repository.UpdateAsync(user);
+            return user;
+        }
+        
+        public async Task<int> GetTotalUserCountAsync()
+        {
+            var allUsers = await _repository.GetAllAsync();
+            return allUsers.Count();
         }
     }
 }

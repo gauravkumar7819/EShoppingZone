@@ -112,7 +112,7 @@ namespace EShoppingZone.Profile.API.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-                    b.Property<string>("GitHubId")
+                    b.Property<string>("GoogleId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ImageUrl")
@@ -148,9 +148,9 @@ namespace EShoppingZone.Profile.API.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.HasIndex("GitHubId")
+                    b.HasIndex("GoogleId")
                         .IsUnique()
-                        .HasFilter("[GitHubId] IS NOT NULL");
+                        .HasFilter("[GoogleId] IS NOT NULL");
 
                     b.HasIndex("MobileNumber")
                         .IsUnique();
@@ -162,7 +162,7 @@ namespace EShoppingZone.Profile.API.Migrations
                         {
                             Id = 1,
                             About = "",
-                            CreatedAt = new DateTime(2026, 4, 20, 5, 46, 52, 885, DateTimeKind.Utc).AddTicks(190),
+                            CreatedAt = new DateTime(2026, 4, 28, 5, 37, 26, 586, DateTimeKind.Utc).AddTicks(9333),
                             Email = "admin@eshoppingzone.com",
                             FullName = "Admin User",
                             Gender = "",
@@ -170,7 +170,7 @@ namespace EShoppingZone.Profile.API.Migrations
                             IsActive = true,
                             IsEmailVerified = true,
                             MobileNumber = "9999999999",
-                            PasswordHash = "AQAAAAIAAYagAAAAEKxkyGDbAfKsq/5AETGSc0Xf8l+UiUOmcK1IDcBIwdeoESJu37i4XyTLd3hd+oZYGw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEFyjPTyT3XrXkFWad/9uLLmMsTuv2QskCCZ+I946rK6oJSK29A0rVt6VRT6MBNpZWA==",
                             Role = "Admin"
                         });
                 });

@@ -32,7 +32,7 @@ namespace EShoppingZone.Product.API.DTOs
         [MaxLength(500)]
         public string Brand { get; set; } = string.Empty;
         
-        public List<string> Images { get; set; } = new(); // Google Images URLs
+        public string ImageUrl { get; set; } = string.Empty;
         
         public Dictionary<string, string> Specifications { get; set; } = new();
         
@@ -56,7 +56,7 @@ namespace EShoppingZone.Product.API.DTOs
         [Range(0, int.MaxValue)]
         public int StockQuantity { get; set; }
         
-        public List<string> Images { get; set; } = new(); // Google Images URLs
+        public string ImageUrl { get; set; } = string.Empty;
         
         public Dictionary<string, string> Specifications { get; set; } = new();
         

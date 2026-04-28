@@ -9,8 +9,9 @@ namespace EShoppingZone.Profile.API.Repositories
         Task<UserProfile?> GetByEmailAsync(string email);
         Task<UserProfile?> GetByMobileNumberAsync(string mobileNumber);
         Task<UserProfile?> GetByFullNameAsync(string fullName);
-        Task<UserProfile?> GetByGitHubIdAsync(string gitHubId);
+        Task<UserProfile?> GetByGoogleIdAsync(string googleId);
         Task<IEnumerable<UserProfile>> GetAllAsync();
+        Task<(IEnumerable<UserProfile> Users, int TotalCount)> GetAllPaginatedAsync(int pageNumber, int pageSize);
         Task<IEnumerable<UserProfile>> GetByRoleAsync(string role);
         Task<UserProfile> CreateAsync(UserProfile user);
         Task<UserProfile> UpdateAsync(UserProfile user);

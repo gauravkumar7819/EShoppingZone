@@ -10,6 +10,7 @@ namespace EShoppingZone.Product.API.Services
         Task<bool> DeleteProductAsync(int id);
         Task<ProductDetailDto?> GetProductByIdAsync(int id);
         Task<PaginatedResponseDto<ProductDto>> GetAllProductsAsync(int pageNumber = 1, int pageSize = 10, string? category = null, string? searchTerm = null);
+        Task<PaginatedResponseDto<ProductDto>> GetAllProductsForAdminAsync(int pageNumber = 1, int pageSize = 10, string? searchTerm = null);
         Task<IEnumerable<ProductDto>> GetProductsByCategoryAsync(string category);
         Task<IEnumerable<ProductDto>> GetProductsByTypeAsync(string type);
         Task<IEnumerable<ProductDto>> GetProductsByNameAsync(string name);

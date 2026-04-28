@@ -48,9 +48,10 @@ namespace EShoppingZone.Product.API.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
-                    b.Property<string>("ImagesJson")
+                    b.Property<string>("ImageUrl")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -117,9 +118,9 @@ namespace EShoppingZone.Product.API.Migrations
                             Id = 1,
                             Brand = "Apple",
                             Category = "Electronics",
-                            CreatedAt = new DateTime(2026, 4, 20, 6, 50, 54, 856, DateTimeKind.Utc).AddTicks(8683),
+                            CreatedAt = new DateTime(2026, 4, 27, 5, 50, 50, 972, DateTimeKind.Utc).AddTicks(8372),
                             Description = "Latest Apple iPhone with A17 Pro chip",
-                            ImagesJson = "[]",
+                            ImageUrl = "",
                             IsActive = true,
                             MRP = 150000m,
                             MerchantId = 1,
@@ -136,9 +137,9 @@ namespace EShoppingZone.Product.API.Migrations
                             Id = 2,
                             Brand = "Penguin",
                             Category = "Books",
-                            CreatedAt = new DateTime(2026, 4, 20, 6, 50, 54, 856, DateTimeKind.Utc).AddTicks(8686),
+                            CreatedAt = new DateTime(2026, 4, 27, 5, 50, 50, 972, DateTimeKind.Utc).AddTicks(8375),
                             Description = "Classic novel by F. Scott Fitzgerald",
-                            ImagesJson = "[]",
+                            ImageUrl = "",
                             IsActive = true,
                             MRP = 499m,
                             MerchantId = 2,
@@ -155,9 +156,9 @@ namespace EShoppingZone.Product.API.Migrations
                             Id = 3,
                             Brand = "Nike",
                             Category = "Apparel",
-                            CreatedAt = new DateTime(2026, 4, 20, 6, 50, 54, 856, DateTimeKind.Utc).AddTicks(8688),
+                            CreatedAt = new DateTime(2026, 4, 27, 5, 50, 50, 972, DateTimeKind.Utc).AddTicks(8378),
                             Description = "Comfortable running shoes",
-                            ImagesJson = "[]",
+                            ImageUrl = "",
                             IsActive = true,
                             MRP = 12999m,
                             MerchantId = 2,
@@ -174,9 +175,9 @@ namespace EShoppingZone.Product.API.Migrations
                             Id = 4,
                             Brand = "Dove",
                             Category = "Personal Care",
-                            CreatedAt = new DateTime(2026, 4, 20, 6, 50, 54, 856, DateTimeKind.Utc).AddTicks(8691),
+                            CreatedAt = new DateTime(2026, 4, 27, 5, 50, 50, 972, DateTimeKind.Utc).AddTicks(8380),
                             Description = "Nourishing hair care",
-                            ImagesJson = "[]",
+                            ImageUrl = "",
                             IsActive = true,
                             MRP = 450m,
                             MerchantId = 3,
