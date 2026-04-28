@@ -1,9 +1,15 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using EShoppingZone.Product.API.DTOs;
 using EShoppingZone.Product.API.Services;
 
 namespace EShoppingZone.Product.API.Controllers
 {
+    /// <summary>
+    /// Public read-only product endpoints accessible to all users.
+    /// Write operations (POST/PUT/DELETE) are restricted to Admin only.
+    /// Merchants must use /api/merchant/products which enforces ownership checks.
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     public class ProductController : ControllerBase
@@ -15,6 +21,10 @@ namespace EShoppingZone.Product.API.Controllers
             _productService = productService;
         }
         
+        // ------------------------------------------------------------------ //
+        //  Public read endpoints                                               //
+        // ------------------------------------------------------------------ //
+
         [HttpGet]
         public async Task<IActionResult> GetAllProducts(
             [FromQuery] int pageNumber = 1,
@@ -65,9 +75,31 @@ namespace EShoppingZone.Product.API.Controllers
             return Ok(products);
         }
         
+        [HttpGet("merchant/{merchantId}")]
+        public async Task<IActionResult> GetProductsByMerchant(int merchantId)
+        {
+            var products = await _productService.GetProductsByMerchantAsync(merchantId);
+            return Ok(products);
+        }
+        
+        // ------------------------------------------------------------------ //
+        //  Review endpoint – authenticated users can add reviews.             //
+        // ------------------------------------------------------------------ //
+        
         [HttpPost("{id}/review")]
+        [Authorize]
         public async Task<IActionResult> AddReview(int id, [FromBody] AddReviewDto reviewDto)
         {
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)
+                              ?? User.FindFirst("sub")
+                              ?? User.FindFirst("nameid");
+
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+                return Unauthorized(new { error = "Unable to identify authenticated user." });
+
+            // Enforce: user can only post as themselves
+            reviewDto.UserId = userId;
+
             var result = await _productService.AddReviewAsync(id, reviewDto);
             if (!result)
                 return NotFound(new { error = "Product not found" });
@@ -75,11 +107,57 @@ namespace EShoppingZone.Product.API.Controllers
             return Ok(new { message = "Review added successfully" });
         }
         
-        [HttpGet("merchant/{merchantId}")]
-        public async Task<IActionResult> GetProductsByMerchant(int merchantId)
+        // ------------------------------------------------------------------ //
+        //  Admin-only write endpoints                                          //
+        //  NOTE: Merchants must use /api/merchant/products instead.           //
+        // ------------------------------------------------------------------ //
+        
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CreateProduct([FromBody] CreateProductDto createProductDto)
         {
-            var products = await _productService.GetProductsByMerchantAsync(merchantId);
-            return Ok(products);
+            try
+            {
+                var product = await _productService.AddProductAsync(createProductDto);
+                return Ok(new { message = "Product created successfully", product });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+        
+        [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateProduct(int id, [FromBody] UpdateProductDto updateProductDto)
+        {
+            var product = await _productService.UpdateProductAsync(id, updateProductDto);
+            if (product == null)
+                return NotFound(new { error = "Product not found" });
+                
+            return Ok(new { message = "Product updated successfully", product });
+        }
+        
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteProduct(int id)
+        {
+            var result = await _productService.DeleteProductAsync(id);
+            if (!result)
+                return NotFound(new { error = "Product not found" });
+                
+            return Ok(new { message = "Product deleted successfully" });
+        }
+        
+        [HttpPut("{id}/stock")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateStock(int id, [FromQuery] int quantity)
+        {
+            var result = await _productService.UpdateStockAsync(id, quantity);
+            if (!result)
+                return BadRequest(new { error = "Insufficient stock or product not found" });
+                
+            return Ok(new { message = "Stock updated successfully" });
         }
     }
-}   
+}

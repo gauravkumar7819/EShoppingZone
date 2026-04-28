@@ -41,11 +41,11 @@ namespace EShoppingZone.Profile.API.Repositories
                 .FirstOrDefaultAsync(u => u.FullName == fullName);
         }
         
-        public async Task<UserProfile?> GetByGitHubIdAsync(string gitHubId)
+        public async Task<UserProfile?> GetByGoogleIdAsync(string googleId)
         {
             return await _context.UserProfiles
                 .Include(u => u.Addresses)
-                .FirstOrDefaultAsync(u => u.GitHubId == gitHubId);
+                .FirstOrDefaultAsync(u => u.GoogleId == googleId);
         }
         
         public async Task<IEnumerable<UserProfile>> GetAllAsync()
@@ -53,6 +53,19 @@ namespace EShoppingZone.Profile.API.Repositories
             return await _context.UserProfiles
                 .Include(u => u.Addresses)
                 .ToListAsync();
+        }
+
+        public async Task<(IEnumerable<UserProfile> Users, int TotalCount)> GetAllPaginatedAsync(int pageNumber, int pageSize)
+        {
+            var totalCount = await _context.UserProfiles.CountAsync();
+            var users = await _context.UserProfiles
+                .Include(u => u.Addresses)
+                .OrderByDescending(u => u.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+            
+            return (users, totalCount);
         }
         
         public async Task<IEnumerable<UserProfile>> GetByRoleAsync(string role)

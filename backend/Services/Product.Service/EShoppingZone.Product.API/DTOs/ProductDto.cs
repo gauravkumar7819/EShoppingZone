@@ -11,7 +11,7 @@ namespace EShoppingZone.Product.API.DTOs
         public decimal MRP { get; set; }
         public int StockQuantity { get; set; }
         public string Brand { get; set; } = string.Empty;
-        public List<string> Images { get; set; } = new();
+        public string ImageUrl { get; set; } = string.Empty;
         public Dictionary<string, string> Specifications { get; set; } = new();
         public double AverageRating { get; set; }
         public int TotalReviews { get; set; }

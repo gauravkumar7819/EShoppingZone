@@ -73,6 +73,20 @@ namespace EShoppingZone.Product.API.Services
                 PageSize = pageSize
             };
         }
+
+        public async Task<PaginatedResponseDto<ProductDto>> GetAllProductsForAdminAsync(
+            int pageNumber = 1, int pageSize = 10, string? searchTerm = null)
+        {
+            var (products, totalCount) = await _repository.GetPaginatedAdminAsync(pageNumber, pageSize, searchTerm);
+            
+            return new PaginatedResponseDto<ProductDto>
+            {
+                Items = _mapper.Map<List<ProductDto>>(products),
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+        }
         
         public async Task<IEnumerable<ProductDto>> GetProductsByCategoryAsync(string category)
         {

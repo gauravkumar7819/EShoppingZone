@@ -45,8 +45,8 @@ namespace EShoppingZone.Product.API.Entities
         [Column(TypeName = "nvarchar(max)")]
         public string ReviewJson { get; set; } = "{}";
         
-        [Column(TypeName = "nvarchar(max)")]
-        public string ImagesJson { get; set; } = "[]";
+        [MaxLength(500)]
+        public string ImageUrl { get; set; } = string.Empty;
         
         [Column(TypeName = "nvarchar(max)")]
         public string SpecificationsJson { get; set; } = "{}";
@@ -65,13 +65,6 @@ namespace EShoppingZone.Product.API.Entities
             get => JsonConvert.DeserializeObject<Dictionary<int, string>>(string.IsNullOrEmpty(ReviewJson) ? "{}" : ReviewJson) ?? new Dictionary<int, string>();
             set => ReviewJson = JsonConvert.SerializeObject(value ?? new Dictionary<int, string>());
         }
-        
-        [NotMapped]
-        public List<string> Images
-        {
-            get => JsonConvert.DeserializeObject<List<string>>(string.IsNullOrEmpty(ImagesJson) ? "[]" : ImagesJson) ?? new List<string>();
-            set => ImagesJson = JsonConvert.SerializeObject(value ?? new List<string>());
-        } // Google Images URLs
         
         [NotMapped]
         public Dictionary<string, string> Specifications

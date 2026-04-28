@@ -46,7 +46,7 @@ namespace EShoppingZone.Profile.API.Entities
         
         public IList<Address> Addresses { get; set; } = new List<Address>();
         
-        public string? GitHubId { get; set; }
+        public string? GoogleId { get; set; }
         
         public bool IsEmailVerified { get; set; } = false;
     }

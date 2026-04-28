@@ -80,6 +80,25 @@ namespace EShoppingZone.Product.API.Repositories
             var product = await GetByIdAsync(id);
             if (product == null) return false;
             
+            // If the product is already inactive (soft-deleted), 
+            // we attempt a physical delete to remove it from the merchant's view.
+            if (!product.IsActive)
+            {
+                try 
+                {
+                    _context.Products.Remove(product);
+                    await _context.SaveChangesAsync();
+                    return true;
+                }
+                catch (Exception)
+                {
+                    // Fallback: If it cannot be hard-deleted (e.g. database constraints like existing orders),
+                    // we keep it as inactive.
+                    return false;
+                }
+            }
+            
+            // Soft delete on first attempt
             product.IsActive = false;
             await _context.SaveChangesAsync();
             return true;
@@ -114,6 +133,28 @@ namespace EShoppingZone.Product.API.Repositories
             var totalCount = await query.CountAsync();
             
             var products = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+                
+            return (products, totalCount);
+        }
+
+        public async Task<(IEnumerable<ProductModel> Products, int TotalCount)> GetPaginatedAdminAsync(
+            int pageNumber, int pageSize, string? searchTerm = null)
+        {
+            var query = _context.Products.AsQueryable();
+            
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                query = query.Where(p => p.Name.ToLower().Contains(searchTerm.ToLower()) || 
+                                        p.Description.ToLower().Contains(searchTerm.ToLower()));
+            }
+            
+            var totalCount = await query.CountAsync();
+            
+            var products = await query
+                .OrderByDescending(p => p.CreatedAt)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();

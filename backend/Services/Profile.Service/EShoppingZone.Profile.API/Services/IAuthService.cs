@@ -6,7 +6,7 @@ namespace EShoppingZone.Profile.API.Services
     public interface IAuthService
     {
         Task<LoginResponseDto> LoginAsync(LoginDto loginDto);
-        Task<LoginResponseDto> GitHubLoginAsync(string gitHubId, string email, string name);
+        Task<LoginResponseDto> GoogleLoginAsync(string googleId, string email, string name);
         string GenerateJwtToken(UserProfile user);
     }
 }

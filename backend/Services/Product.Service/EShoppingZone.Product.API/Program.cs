@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using EShoppingZone.Product.API.Data;
 using EShoppingZone.Product.API.Repositories;
 using EShoppingZone.Product.API.Services;
@@ -43,6 +46,34 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddDbContext<ProductDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// JWT Authentication
+var jwtSecret = builder.Configuration["JWT__Secret"] ?? "eshoppingzone-super-secret-jwt-key-256-bits-long";
+var jwtIssuer = builder.Configuration["JWT__Issuer"] ?? "EShoppingZone";
+var jwtAudience = builder.Configuration["JWT__Audience"] ?? "EShoppingZoneUsers";
+var key = Encoding.ASCII.GetBytes(jwtSecret);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidateIssuer = true,
+        ValidIssuer = jwtIssuer,
+        ValidateAudience = true,
+        ValidAudience = jwtAudience,
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero
+    };
+});
+
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
 
@@ -75,7 +106,6 @@ app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapControllers();
 
 // Ensure database is created
 using (var scope = app.Services.CreateScope())
@@ -83,5 +113,7 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<ProductDbContext>();
     dbContext.Database.Migrate();
 }
+
+app.MapControllers();
 
 app.Run();
