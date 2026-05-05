@@ -54,3 +54,5 @@ TestResult.xml
 nunit-*.xml
 .env
 .env.*
+SECRET_MANAGEMENT.md
+backend/.env

@@ -1,0 +1,152 @@
+services:
+  sql-server:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: eshoppingzone-sqlserver
+    environment:
+      SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    networks:
+      - eshoppingzone-network
+
+  profile-service:
+    build:
+      context: ./Services/Profile.Service/EShoppingZone.Profile.API
+      dockerfile: Dockerfile
+    container_name: eshoppingzone-profile-service
+    env_file:
+      - .env
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Server=sql-server;Database=EShoppingZone_ProfileDB;User=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=False
+    ports:
+      - "5001:80"
+    depends_on:
+      - sql-server
+    networks:
+      - eshoppingzone-network
+
+  product-service:
+    build:
+      context: ./Services/Product.Service/EShoppingZone.Product.API
+      dockerfile: Dockerfile
+    container_name: eshoppingzone-product-service
+    env_file:
+      - .env
+    environment:
+      - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sql-server;Database=EShoppingZone_ProductDB;User=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=False
+    ports:
+      - "5002:80"
+    depends_on:
+      - sql-server
+    networks:
+      - eshoppingzone-network
+
+  redis:
+    image: redis:alpine
+    container_name: eshoppingzone-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - eshoppingzone-network
+
+  cart-service:
+    build:
+      context: ./Services/Cart.Service/EShoppingZone.Cart.API
+      dockerfile: Dockerfile
+    container_name: eshoppingzone-cart-service
+    env_file:
+      - .env
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Server=sql-server;Database=EShoppingZone_CartDB;User=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=true
+      - Redis__ConnectionString=redis:6379
+    ports:
+      - "5003:80"
+    depends_on:
+      - sql-server
+      - redis
+    networks:
+      - eshoppingzone-network
+
+  order-service:
+    build:
+      context: ./Services/Order.Service/EShoppingZone.Order.API
+      dockerfile: Dockerfile
+    container_name: eshoppingzone-order-service
+    env_file:
+      - .env
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Server=sql-server;Database=EShoppingZone_OrderDB;User=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=true
+      - Services__CartService=http://cart-service
+      - Services__WalletService=http://wallet-service
+      - Services__ProfileService=http://profile-service
+    ports:
+      - "5004:80"
+    depends_on:
+      - sql-server
+      - cart-service
+      - wallet-service
+      - profile-service
+    networks:
+      - eshoppingzone-network
+
+  wallet-service:
+    build:
+      context: ./Services/Wallet.Service/EShoppingZone.Wallet.API
+      dockerfile: Dockerfile
+    container_name: eshoppingzone-wallet-service
+    env_file:
+      - .env
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Server=sql-server;Database=EShoppingZone_WalletDB;User=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=False
+    ports:
+      - "5005:80"
+    depends_on:
+      - sql-server
+    networks:
+      - eshoppingzone-network
+
+  api-gateway:
+    build:
+      context: ./EShoppingZone.ApiGateway
+      dockerfile: Dockerfile
+    container_name: eshoppingzone-api-gateway
+    env_file:
+      - .env
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ReverseProxy__Clusters__profile-cluster__Destinations__destination1__Address=http://profile-service/
+      - ReverseProxy__Clusters__product-cluster__Destinations__destination1__Address=http://product-service/
+      - ReverseProxy__Clusters__cart-cluster__Destinations__destination1__Address=http://cart-service/
+      - ReverseProxy__Clusters__order-cluster__Destinations__destination1__Address=http://order-service/
+      - ReverseProxy__Clusters__wallet-cluster__Destinations__destination1__Address=http://wallet-service/
+    ports:
+      - "5000:80"
+    depends_on:
+      - profile-service
+      - product-service
+      - cart-service
+      - order-service
+      - wallet-service
+    networks:
+      - eshoppingzone-network
+
+networks:
+  eshoppingzone-network:
+    driver: bridge
+
+volumes:
+  sqlserver-data:

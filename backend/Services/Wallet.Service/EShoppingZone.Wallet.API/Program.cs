@@ -50,9 +50,9 @@ builder.Services.AddDbContext<WalletDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // JWT Authentication
-var jwtSecret = builder.Configuration["JWT__Secret"] ?? "eshoppingzone-super-secret-jwt-key-256-bits-long";
-var jwtIssuer = builder.Configuration["JWT__Issuer"] ?? "EShoppingZone";
-var jwtAudience = builder.Configuration["JWT__Audience"] ?? "EShoppingZoneUsers";
+var jwtSecret = builder.Configuration["JWT:Secret"] ?? throw new InvalidOperationException("JWT:Secret not configured in .env file");
+var jwtIssuer = builder.Configuration["JWT:Issuer"] ?? throw new InvalidOperationException("JWT:Issuer not configured in .env file");
+var jwtAudience = builder.Configuration["JWT:Audience"] ?? throw new InvalidOperationException("JWT:Audience not configured in .env file");
 var key = Encoding.ASCII.GetBytes(jwtSecret);
 
 builder.Services.AddAuthentication(options =>

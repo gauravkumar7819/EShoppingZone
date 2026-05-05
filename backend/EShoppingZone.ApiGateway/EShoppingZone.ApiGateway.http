@@ -1,0 +1,6 @@
+@EShoppingZone.ApiGateway_HostAddress = http://localhost:5227
+
+GET {{EShoppingZone.ApiGateway_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

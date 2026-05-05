@@ -71,7 +71,7 @@ namespace EShoppingZone.Profile.API.Controllers
                 return BadRequest(new { error = "Google ClientId is not configured" });
             }
 
-            var redirectUri = _configuration["Google:RedirectUri"]?.Trim() ?? "http://localhost:5173/google-callback";
+            var redirectUri = _configuration["Google:RedirectUri"]?.Trim() ?? throw new InvalidOperationException("Google:RedirectUri not configured in .env file");
             var scope = "openid profile email";
             var redirectUrl = $"https://accounts.google.com/o/oauth2/v2/auth?client_id={clientId}&redirect_uri={Uri.EscapeDataString(redirectUri)}&response_type=code&scope={Uri.EscapeDataString(scope)}&access_type=offline&prompt=consent";
             return Redirect(redirectUrl);
@@ -89,7 +89,7 @@ namespace EShoppingZone.Profile.API.Controllers
 
                 var clientId = _configuration["Google:ClientId"]?.Trim();
                 var clientSecret = _configuration["Google:ClientSecret"]?.Trim();
-                var redirectUri = _configuration["Google:RedirectUri"]?.Trim() ?? "http://localhost:5173/google-callback";
+                var redirectUri = _configuration["Google:RedirectUri"]?.Trim() ?? throw new InvalidOperationException("Google:RedirectUri not configured in .env file");
 
                 if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
                 {
