@@ -4,6 +4,10 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// IMPORTANT: Fix Azure Container Apps port issue
+// Must match targetPort in Azure (we will use 8080)
+builder.WebHost.UseUrls("http://+:8080");
+
 // Add services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -13,12 +17,19 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
-// JWT Authentication
-var jwtSecret = builder.Configuration["JWT:Secret"] ?? throw new InvalidOperationException("JWT:Secret not configured in .env file");
-var jwtIssuer = builder.Configuration["JWT:Issuer"] ?? throw new InvalidOperationException("JWT:Issuer not configured in .env file");
-var jwtAudience = builder.Configuration["JWT:Audience"] ?? throw new InvalidOperationException("JWT:Audience not configured in .env file");
+// JWT Configuration
+var jwtSecret = builder.Configuration["JWT:Secret"]
+    ?? throw new InvalidOperationException("JWT:Secret not configured");
+
+var jwtIssuer = builder.Configuration["JWT:Issuer"]
+    ?? throw new InvalidOperationException("JWT:Issuer not configured");
+
+var jwtAudience = builder.Configuration["JWT:Audience"]
+    ?? throw new InvalidOperationException("JWT:Audience not configured");
+
 var key = Encoding.ASCII.GetBytes(jwtSecret);
 
+// Authentication
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -26,7 +37,7 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    options.RequireHttpsMetadata = false;
+    options.RequireHttpsMetadata = false; // IMPORTANT for Azure Container Apps
     options.SaveToken = true;
     options.TokenValidationParameters = new TokenValidationParameters
     {
@@ -41,30 +52,41 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddAuthorization();
+// CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", builder =>
+    options.AddPolicy("AllowAll", policy =>
     {
-        builder.AllowAnyOrigin()
-               .AllowAnyMethod()
-               .AllowAnyHeader();
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
     });
 });
 
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+// Swagger (always enable for gateway testing)
+app.UseSwagger(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.RouteTemplate = "swagger/{documentName}/swagger.json";
+});
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "EShoppingZone API Gateway v1");
+    c.RoutePrefix = "swagger";
+});
 
-app.UseHttpsRedirection();
+// IMPORTANT ORDER
 app.UseCors("AllowAll");
+
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Controllers + Reverse Proxy
 app.MapControllers();
 app.MapReverseProxy();
 
 app.Run();
+public partial class Program { }

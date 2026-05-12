@@ -97,16 +97,21 @@ builder.Services.AddCors(options =>
         });
 });
 
+// IMPORTANT: Fix Azure Container Apps port issue
+builder.WebHost.UseUrls("http://+:8080");
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
+// Always enable Swagger for debugging in Azure
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "EShoppingZone Profile API v1");
+    c.RoutePrefix = "swagger"; // Ensure it's at /swagger
+});
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection(); // Removed for Azure Container Apps TLS termination
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
@@ -121,3 +126,4 @@ using (var scope = app.Services.CreateScope())
 app.MapControllers();
 
 app.Run();
+public partial class Program { }

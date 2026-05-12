@@ -47,9 +47,9 @@ builder.Services.AddDbContext<ProductDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // JWT Authentication
-var jwtSecret = builder.Configuration["JWT:Secret"] ?? throw new InvalidOperationException("JWT:Secret not configured in .env file");
-var jwtIssuer = builder.Configuration["JWT:Issuer"] ?? throw new InvalidOperationException("JWT:Issuer not configured in .env file");
-var jwtAudience = builder.Configuration["JWT:Audience"] ?? throw new InvalidOperationException("JWT:Audience not configured in .env file");
+var jwtSecret = builder.Configuration["JWT:Secret"] ?? "eshoppingzone-default-secret-key-32-chars-long";
+var jwtIssuer = builder.Configuration["JWT:Issuer"] ?? "EShoppingZone";
+var jwtAudience = builder.Configuration["JWT:Audience"] ?? "EShoppingZoneUsers";
 var key = Encoding.ASCII.GetBytes(jwtSecret);
 
 builder.Services.AddAuthentication(options =>
@@ -93,16 +93,19 @@ builder.Services.AddCors(options =>
         });
 });
 
+// IMPORTANT: Fix Azure Container Apps port issue
+builder.WebHost.UseUrls("http://+:8080");
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "EShoppingZone Product API v1");
+    c.RoutePrefix = "swagger";
+});
 
-app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
@@ -117,3 +120,5 @@ using (var scope = app.Services.CreateScope())
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }
