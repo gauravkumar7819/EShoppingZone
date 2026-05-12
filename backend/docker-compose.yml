@@ -1,17 +1,4 @@
 services:
-  sql-server:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: eshoppingzone-sqlserver
-    environment:
-      SA_PASSWORD: ${MSSQL_SA_PASSWORD}
-      ACCEPT_EULA: "Y"
-    ports:
-      - "1433:1433"
-    volumes:
-      - sqlserver-data:/var/opt/mssql
-    networks:
-      - eshoppingzone-network
-
   profile-service:
     build:
       context: ./Services/Profile.Service/EShoppingZone.Profile.API
@@ -22,11 +9,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
-      - ConnectionStrings__DefaultConnection=Server=sql-server;Database=EShoppingZone_ProfileDB;User=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=False
+      - ConnectionStrings__DefaultConnection=${AZURE_SQL_CONNECTION_STRING}
     ports:
       - "5001:80"
-    depends_on:
-      - sql-server
     networks:
       - eshoppingzone-network
 
@@ -40,11 +25,9 @@ services:
     environment:
       - ASPNETCORE_URLS=http://+:80
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=sql-server;Database=EShoppingZone_ProductDB;User=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=False
+      - ConnectionStrings__DefaultConnection=${AZURE_SQL_CONNECTION_STRING}
     ports:
       - "5002:80"
-    depends_on:
-      - sql-server
     networks:
       - eshoppingzone-network
 
@@ -66,12 +49,11 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
-      - ConnectionStrings__DefaultConnection=Server=sql-server;Database=EShoppingZone_CartDB;User=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=true
+      - ConnectionStrings__DefaultConnection=${AZURE_SQL_CONNECTION_STRING}
       - Redis__ConnectionString=redis:6379
     ports:
       - "5003:80"
     depends_on:
-      - sql-server
       - redis
     networks:
       - eshoppingzone-network
@@ -86,14 +68,13 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
-      - ConnectionStrings__DefaultConnection=Server=sql-server;Database=EShoppingZone_OrderDB;User=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=true
+      - ConnectionStrings__DefaultConnection=${AZURE_SQL_CONNECTION_STRING}
       - Services__CartService=http://cart-service
       - Services__WalletService=http://wallet-service
       - Services__ProfileService=http://profile-service
     ports:
       - "5004:80"
     depends_on:
-      - sql-server
       - cart-service
       - wallet-service
       - profile-service
@@ -110,11 +91,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
-      - ConnectionStrings__DefaultConnection=Server=sql-server;Database=EShoppingZone_WalletDB;User=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=False
+      - ConnectionStrings__DefaultConnection=${AZURE_SQL_CONNECTION_STRING}
     ports:
       - "5005:80"
-    depends_on:
-      - sql-server
     networks:
       - eshoppingzone-network
 
@@ -147,6 +126,3 @@ services:
 networks:
   eshoppingzone-network:
     driver: bridge
-
-volumes:
-  sqlserver-data:
