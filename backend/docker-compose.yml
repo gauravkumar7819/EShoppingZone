@@ -8,10 +8,10 @@ services:
       - .env
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=${AZURE_SQL_CONNECTION_STRING}
     ports:
-      - "5001:80"
+      - "5001:8080"
     networks:
       - eshoppingzone-network
 
@@ -23,11 +23,11 @@ services:
     env_file:
       - .env
     environment:
-      - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_URLS=http://+:8080
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=${AZURE_SQL_CONNECTION_STRING}
     ports:
-      - "5002:80"
+      - "5002:8080"
     networks:
       - eshoppingzone-network
 
@@ -48,11 +48,11 @@ services:
       - .env
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=${AZURE_SQL_CONNECTION_STRING}
       - Redis__ConnectionString=redis:6379
     ports:
-      - "5003:80"
+      - "5003:8080"
     depends_on:
       - redis
     networks:
@@ -67,13 +67,13 @@ services:
       - .env
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=${AZURE_SQL_CONNECTION_STRING}
-      - Services__CartService=http://cart-service
-      - Services__WalletService=http://wallet-service
-      - Services__ProfileService=http://profile-service
+      - Services__CartService=http://cart-service:8080
+      - Services__WalletService=http://wallet-service:8080
+      - Services__ProfileService=http://profile-service:8080
     ports:
-      - "5004:80"
+      - "5004:8080"
     depends_on:
       - cart-service
       - wallet-service
@@ -90,10 +90,10 @@ services:
       - .env
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=${AZURE_SQL_CONNECTION_STRING}
     ports:
-      - "5005:80"
+      - "5005:8080"
     networks:
       - eshoppingzone-network
 
@@ -106,14 +106,14 @@ services:
       - .env
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:80
-      - ReverseProxy__Clusters__profile-cluster__Destinations__destination1__Address=http://profile-service/
-      - ReverseProxy__Clusters__product-cluster__Destinations__destination1__Address=http://product-service/
-      - ReverseProxy__Clusters__cart-cluster__Destinations__destination1__Address=http://cart-service/
-      - ReverseProxy__Clusters__order-cluster__Destinations__destination1__Address=http://order-service/
-      - ReverseProxy__Clusters__wallet-cluster__Destinations__destination1__Address=http://wallet-service/
+      - ASPNETCORE_URLS=http://+:8080
+      - ReverseProxy__Clusters__profile-cluster__Destinations__destination1__Address=http://profile-service:8080/
+      - ReverseProxy__Clusters__product-cluster__Destinations__destination1__Address=http://product-service:8080/
+      - ReverseProxy__Clusters__cart-cluster__Destinations__destination1__Address=http://cart-service:8080/
+      - ReverseProxy__Clusters__order-cluster__Destinations__destination1__Address=http://order-service:8080/
+      - ReverseProxy__Clusters__wallet-cluster__Destinations__destination1__Address=http://wallet-service:8080/
     ports:
-      - "5000:80"
+      - "5000:8080"
     depends_on:
       - profile-service
       - product-service
