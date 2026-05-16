@@ -1,4 +1,20 @@
+# ================================================================
+# EShoppingZone - Docker Compose (LOCAL DEVELOPMENT)
+# ================================================================
+# HOW ENVIRONMENT SWITCHING WORKS:
+#   LOCAL  → ASPNETCORE_ENVIRONMENT=Development  (set below)
+#            → appsettings.Development.json overrides kick in
+#            → Docker service names used for inter-service calls
+#   AZURE  → ASPNETCORE_ENVIRONMENT=Production   (Azure default)
+#            → appsettings.json base values used
+#            → Azure Container App URLs used for inter-service calls
+#
+# To SWITCH to production simulation locally, change each service's
+# ASPNETCORE_ENVIRONMENT line from "Development" to "Production".
+# ================================================================
+
 services:
+
   profile-service:
     build:
       context: ./Services/Profile.Service/EShoppingZone.Profile.API
