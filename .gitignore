@@ -9,6 +9,17 @@
 
 # Build results
 [Dd]ebug/
+
+# SonarQube
+.sonarqube/
+
+# Coverage Reports
+coverage.xml
+TestResults/
+
+# Build folders
+bin/
+obj/
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
