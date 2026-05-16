@@ -52,26 +52,26 @@ builder.Services.AddDbContext<OrderDbContext>(options =>
 builder.Services.AddTransient<AuthorizationHeaderForwardingHandler>();
 builder.Services.AddHttpClient<ICartServiceClient, CartServiceClient>(client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["Services:CartService"] ?? "http://localhost:5003");
+    client.BaseAddress = new Uri(builder.Configuration["Services:CartService"] ?? throw new InvalidOperationException("Services:CartService not configured in .env file"));
     client.Timeout = TimeSpan.FromSeconds(30);
 }).AddHttpMessageHandler<AuthorizationHeaderForwardingHandler>();
 
 builder.Services.AddHttpClient<IWalletServiceClient, WalletServiceClient>(client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["Services:WalletService"] ?? "http://localhost:5005");
+    client.BaseAddress = new Uri(builder.Configuration["Services:WalletService"] ?? throw new InvalidOperationException("Services:WalletService not configured in .env file"));
     client.Timeout = TimeSpan.FromSeconds(30);
 }).AddHttpMessageHandler<AuthorizationHeaderForwardingHandler>();
 
 builder.Services.AddHttpClient<IProfileServiceClient, ProfileServiceClient>(client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["Services:ProfileService"] ?? "http://localhost:5001");
+    client.BaseAddress = new Uri(builder.Configuration["Services:ProfileService"] ?? throw new InvalidOperationException("Services:ProfileService not configured in .env file"));
     client.Timeout = TimeSpan.FromSeconds(30);
 }).AddHttpMessageHandler<AuthorizationHeaderForwardingHandler>();
 
 // JWT Authentication
-var jwtSecret = builder.Configuration["JWT__Secret"] ?? "eshoppingzone-super-secret-jwt-key-256-bits-long";
-var jwtIssuer = builder.Configuration["JWT__Issuer"] ?? "EShoppingZone";
-var jwtAudience = builder.Configuration["JWT__Audience"] ?? "EShoppingZoneUsers";
+var jwtSecret = builder.Configuration["JWT:Secret"] ?? throw new InvalidOperationException("JWT:Secret not configured in .env file");
+var jwtIssuer = builder.Configuration["JWT:Issuer"] ?? throw new InvalidOperationException("JWT:Issuer not configured in .env file");
+var jwtAudience = builder.Configuration["JWT:Audience"] ?? throw new InvalidOperationException("JWT:Audience not configured in .env file");
 var key = Encoding.ASCII.GetBytes(jwtSecret);
 
 builder.Services.AddAuthentication(options =>
@@ -114,16 +114,21 @@ builder.Services.AddCors(options =>
     });
 });
 
+// IMPORTANT: Fix Azure Container Apps port issue
+builder.WebHost.UseUrls("http://+:8080");
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
+// Always enable Swagger for debugging in Azure
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "EShoppingZone Order API v1");
+    c.RoutePrefix = "swagger";
+});
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection(); // Removed for Azure Container Apps TLS termination
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();

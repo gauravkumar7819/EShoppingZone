@@ -1,0 +1,144 @@
+# ================================================================
+# EShoppingZone - Docker Compose (LOCAL DEVELOPMENT)
+# ================================================================
+# HOW ENVIRONMENT SWITCHING WORKS:
+#   LOCAL  → ASPNETCORE_ENVIRONMENT=Development  (set below)
+#            → appsettings.Development.json overrides kick in
+#            → Docker service names used for inter-service calls
+#   AZURE  → ASPNETCORE_ENVIRONMENT=Production   (Azure default)
+#            → appsettings.json base values used
+#            → Azure Container App URLs used for inter-service calls
+#
+# To SWITCH to production simulation locally, change each service's
+# ASPNETCORE_ENVIRONMENT line from "Development" to "Production".
+# ================================================================
+
+services:
+
+  profile-service:
+    build:
+      context: ./Services/Profile.Service/EShoppingZone.Profile.API
+      dockerfile: Dockerfile
+    container_name: eshoppingzone-profile-service
+    env_file:
+      - .env
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=${AZURE_SQL_CONNECTION_STRING}
+    ports:
+      - "5001:8080"
+    networks:
+      - eshoppingzone-network
+
+  product-service:
+    build:
+      context: ./Services/Product.Service/EShoppingZone.Product.API
+      dockerfile: Dockerfile
+    container_name: eshoppingzone-product-service
+    env_file:
+      - .env
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=${AZURE_SQL_CONNECTION_STRING}
+    ports:
+      - "5002:8080"
+    networks:
+      - eshoppingzone-network
+
+  redis:
+    image: redis:alpine
+    container_name: eshoppingzone-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - eshoppingzone-network
+
+  cart-service:
+    build:
+      context: ./Services/Cart.Service/EShoppingZone.Cart.API
+      dockerfile: Dockerfile
+    container_name: eshoppingzone-cart-service
+    env_file:
+      - .env
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=${AZURE_SQL_CONNECTION_STRING}
+      - Redis__ConnectionString=redis:6379
+    ports:
+      - "5003:8080"
+    depends_on:
+      - redis
+    networks:
+      - eshoppingzone-network
+
+  order-service:
+    build:
+      context: ./Services/Order.Service/EShoppingZone.Order.API
+      dockerfile: Dockerfile
+    container_name: eshoppingzone-order-service
+    env_file:
+      - .env
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=${AZURE_SQL_CONNECTION_STRING}
+      - Services__CartService=http://cart-service:8080
+      - Services__WalletService=http://wallet-service:8080
+      - Services__ProfileService=http://profile-service:8080
+    ports:
+      - "5004:8080"
+    depends_on:
+      - cart-service
+      - wallet-service
+      - profile-service
+    networks:
+      - eshoppingzone-network
+
+  wallet-service:
+    build:
+      context: ./Services/Wallet.Service/EShoppingZone.Wallet.API
+      dockerfile: Dockerfile
+    container_name: eshoppingzone-wallet-service
+    env_file:
+      - .env
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=${AZURE_SQL_CONNECTION_STRING}
+    ports:
+      - "5005:8080"
+    networks:
+      - eshoppingzone-network
+
+  api-gateway:
+    build:
+      context: ./EShoppingZone.ApiGateway
+      dockerfile: Dockerfile
+    container_name: eshoppingzone-api-gateway
+    env_file:
+      - .env
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ReverseProxy__Clusters__profile-cluster__Destinations__destination1__Address=http://profile-service:8080/
+      - ReverseProxy__Clusters__product-cluster__Destinations__destination1__Address=http://product-service:8080/
+      - ReverseProxy__Clusters__cart-cluster__Destinations__destination1__Address=http://cart-service:8080/
+      - ReverseProxy__Clusters__order-cluster__Destinations__destination1__Address=http://order-service:8080/
+      - ReverseProxy__Clusters__wallet-cluster__Destinations__destination1__Address=http://wallet-service:8080/
+    ports:
+      - "5000:8080"
+    depends_on:
+      - profile-service
+      - product-service
+      - cart-service
+      - order-service
+      - wallet-service
+    networks:
+      - eshoppingzone-network
+
+networks:
+  eshoppingzone-network:
+    driver: bridge

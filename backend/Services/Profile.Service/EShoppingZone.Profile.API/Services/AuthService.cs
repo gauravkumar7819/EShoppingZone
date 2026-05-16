@@ -102,7 +102,7 @@ namespace EShoppingZone.Profile.API.Services
         public string GenerateJwtToken(UserProfile user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Secret"] ?? "your-super-secret-key-minimum-32-characters-long!");
+            var key = Encoding.ASCII.GetBytes(_configuration["JWT:Secret"] ?? throw new InvalidOperationException("JWT:Secret not configured in .env file"));
             
             var claims = new List<Claim>
             {
